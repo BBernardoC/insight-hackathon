@@ -1,4 +1,4 @@
-import { Paper, Typography } from "@mui/material";
+import { Box, Paper, Typography } from "@mui/material";
 import {
   BarChart,
   Bar,
@@ -14,6 +14,7 @@ import { transformarDadosPesquisa } from "@/utils/transformarDadosPesquisa";
 import dadosReais from "@/utils/dados_disciplinaPresencial.json";
 import { DadoPesquisa } from "@/types/DadoPesquisa";
 
+// ================= TOOLTIP CUSTOMIZADO =================
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload || !payload.length) return null;
 
@@ -78,7 +79,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-export default function Grafico({ filters }: { filters: DashboardFilters }) {
+// ================= COMPONENTE DE GRÁFICO INDIVIDUAL =================
+interface GraficoIndividualProps {
+  filters: DashboardFilters;
+  title: string;
+}
+
+function GraficoIndividual({ filters, title }: GraficoIndividualProps) {
   const dados = dadosReais as DadoPesquisa[];
 
   const dadosFiltrados = dados.filter((item) => {
@@ -126,11 +133,11 @@ export default function Grafico({ filters }: { filters: DashboardFilters }) {
     };
   });
 
-  const ORDEM_RESPOSTAS = ["Positivo", "Desconheço", "Negativo"];
+  const ORDEM_RESPOSTAS = ["Positivo", "Neutro", "Negativo"];
 
   const CORES_MAP: Record<string, string> = {
     Positivo: "#18a41cff",
-    Desconheço: "#BDBDBD",
+    Neutro: "#BDBDBD",
     Negativo: "#f30c0cff",
   };
 
@@ -139,13 +146,21 @@ export default function Grafico({ filters }: { filters: DashboardFilters }) {
   );
 
   return (
-    <Paper className="p-6 border rounded-xl">
-      <Typography variant="h6" className="font-bold mb-4">
+    <Paper elevation={2} sx={{ p: 3, height: "100%" }}>
+      <Typography variant="h6" fontWeight="bold" gutterBottom color="primary">
+        {title}
+      </Typography>
+      <Typography variant="body2" color="text.secondary" mb={2}>
         Distribuição percentual das respostas por pergunta (%)
       </Typography>
 
       {dadosGrafico.length === 0 ? (
-        <Typography variant="body1" className="text-gray-500 text-center py-8">
+        <Typography
+          variant="body1"
+          color="text.secondary"
+          textAlign="center"
+          py={8}
+        >
           Nenhum dado encontrado com os filtros selecionados.
         </Typography>
       ) : (
@@ -184,5 +199,29 @@ export default function Grafico({ filters }: { filters: DashboardFilters }) {
         </ResponsiveContainer>
       )}
     </Paper>
+  );
+}
+
+// ================= COMPONENTE PRINCIPAL =================
+interface Props {
+  filtersLeft: DashboardFilters;
+  filtersRight: DashboardFilters;
+}
+
+export default function GraficoDuplo({ filtersLeft, filtersRight }: Props) {
+  return (
+    <Box sx={{ width: "100%", p: 2 }}>
+      <Box
+        display="grid"
+        gridTemplateColumns={{ xs: "1fr", lg: "1fr 1fr" }}
+        gap={3}
+      >
+        {/* GRÁFICO ESQUERDO */}
+        <GraficoIndividual filters={filtersLeft} title="Gráfico 1" />
+
+        {/* GRÁFICO DIREITO */}
+        <GraficoIndividual filters={filtersRight} title="Gráfico 2" />
+      </Box>
+    </Box>
   );
 }

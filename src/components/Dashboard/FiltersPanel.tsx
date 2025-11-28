@@ -1,15 +1,5 @@
 import React from "react";
-import {
-  Box,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  Button,
-  Chip,
-  OutlinedInput,
-  SelectChangeEvent,
-} from "@mui/material";
+import { Box, Button, Chip, Autocomplete, TextField } from "@mui/material";
 
 import dadosReais from "@/utils/dados_disciplinaPresencial.json";
 import { DadoPesquisa } from "@/types/DadoPesquisa";
@@ -35,15 +25,19 @@ export default function FiltersPanel({ filters, onFiltersChange }: Props) {
   const handleChange = (field: keyof DashboardFilters, value: string[]) => {
     const updated = { ...filters, [field]: value };
 
-    // Se alterar setor, limpa curso e disciplina
     if (field === "setorCurso") {
       updated.curso = [];
       updated.disciplina = [];
+      updated.pergunta = [];
     }
 
-    // Se alterar curso, limpa disciplina
     if (field === "curso") {
       updated.disciplina = [];
+      updated.pergunta = [];
+    }
+
+    if (field === "disciplina") {
+      updated.pergunta = [];
     }
 
     onFiltersChange(updated);
@@ -66,7 +60,7 @@ export default function FiltersPanel({ filters, onFiltersChange }: Props) {
 
   // ✅ DISCIPLINAS BASEADAS EM SETOR + CURSO
   const disciplinas =
-    filters.curso.length === 0 || filters.curso.length > 1
+    filters.curso.length === 0
       ? []
       : Array.from(
           new Set(
@@ -80,7 +74,7 @@ export default function FiltersPanel({ filters, onFiltersChange }: Props) {
           )
         );
 
-  // ✅ PERGUNTAS BASEADAS NOS FILTROS ANTERIORES
+  // ✅ PERGUNTAS BASEADAS NOS FILTROS
   const perguntas = Array.from(
     new Set(
       dados
@@ -103,148 +97,82 @@ export default function FiltersPanel({ filters, onFiltersChange }: Props) {
   return (
     <Box display="flex" gap={2} flexWrap="wrap">
       {/* SETOR */}
-      <FormControl fullWidth size="small">
-        <InputLabel>Setor</InputLabel>
-        <Select<String[]>
-          multiple
-          value={filters.setorCurso}
-          label="Setor"
-          onChange={(e: SelectChangeEvent<string[]>) =>
-            handleChange("setorCurso", e.target.value as string[])
-          }
-          input={<OutlinedInput label="Setor" />}
-          renderValue={(selected) => (
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-              {(selected as string[]).map((value) => (
-                <Chip key={value} label={value} size="small" />
-              ))}
-            </Box>
-          )}
-        >
-          {setores.map((setor) => (
-            <MenuItem key={setor} value={setor}>
-              {setor}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      <Autocomplete
+        multiple
+        options={setores}
+        value={filters.setorCurso}
+        onChange={(_, value) => handleChange("setorCurso", value)}
+        renderInput={(params) => (
+          <TextField {...params} label="Setor" size="small" />
+        )}
+        ChipProps={{ size: "small" }}
+        sx={{ minWidth: 220 }}
+      />
 
       {/* CURSO */}
-      <FormControl fullWidth size="small" disabled={cursos.length === 0}>
-        <InputLabel>Curso</InputLabel>
-        <Select<String[]>
-          multiple
-          value={filters.curso}
-          label="Curso"
-          onChange={(e: SelectChangeEvent<string[]>) =>
-            handleChange("curso", e.target.value as string[])
-          }
-          input={<OutlinedInput label="Curso" />}
-          renderValue={(selected) => (
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-              {(selected as string[]).map((value) => (
-                <Chip key={value} label={value} size="small" />
-              ))}
-            </Box>
-          )}
-        >
-          {cursos.map((curso) => (
-            <MenuItem key={curso} value={curso}>
-              {curso}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      <Autocomplete
+        multiple
+        options={cursos}
+        value={filters.curso}
+        onChange={(_, value) => handleChange("curso", value)}
+        disabled={cursos.length === 0}
+        renderInput={(params) => (
+          <TextField {...params} label="Curso" size="small" />
+        )}
+        ChipProps={{ size: "small" }}
+        sx={{ minWidth: 220 }}
+      />
 
       {/* DISCIPLINA */}
-      <FormControl fullWidth size="small" disabled={disciplinas.length === 0}>
-        <InputLabel>Disciplina</InputLabel>
-        <Select<String[]>
-          multiple
-          value={filters.disciplina}
-          label="Disciplina"
-          onChange={(e: SelectChangeEvent<string[]>) =>
-            handleChange("disciplina", e.target.value as string[])
-          }
-          input={<OutlinedInput label="Disciplina" />}
-          renderValue={(selected) => (
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-              {(selected as string[]).map((value) => (
-                <Chip key={value} label={value} size="small" />
-              ))}
-            </Box>
-          )}
-        >
-          {disciplinas.map((disciplina) => (
-            <MenuItem key={disciplina} value={disciplina}>
-              {disciplina}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      <Autocomplete
+        multiple
+        options={disciplinas}
+        value={filters.disciplina}
+        onChange={(_, value) => handleChange("disciplina", value)}
+        disabled={disciplinas.length === 0}
+        renderInput={(params) => (
+          <TextField {...params} label="Disciplina" size="small" />
+        )}
+        ChipProps={{ size: "small" }}
+        sx={{ minWidth: 220 }}
+      />
 
-      {/* PERGUNTA */}
-      <FormControl fullWidth size="small">
-        <InputLabel>Perguntas</InputLabel>
-        <Select<String[]>
-          multiple
-          value={filters.pergunta}
-          label="Perguntas"
-          onChange={(e: SelectChangeEvent<string[]>) =>
-            handleChange("pergunta", e.target.value as string[])
-          }
-          input={<OutlinedInput label="Perguntas" />}
-          renderValue={(selected) => (
-            <Box
-              sx={{
-                display: "flex",
-                width: "100%",
-                gap: 0.5,
-                flexWrap: "wrap", // <<< PERMITE QUEBRAR LINHA
-              }}
-            >
-              {(selected as string[]).map((value) => (
-                <Chip
-                  key={value}
-                  label={`Q${perguntas.indexOf(value) + 1}`}
-                  title={value}
-                  size="small"
-                  sx={{
-                    maxWidth: "100%",
-                    "& .MuiChip-label": {
-                      whiteSpace: "normal", // <<< permite quebra de texto
-                      wordBreak: "break-word",
-                    },
-                  }}
-                />
-              ))}
-            </Box>
-          )}
-          MenuProps={{
-            PaperProps: {
-              sx: {
-                maxWidth: 900, // limita largura
-                width: "100%",
-                maxHeight: 320,
-              },
-            },
-          }}
-        >
-          {perguntas.map((pergunta, index) => (
-            <MenuItem
-              key={pergunta}
-              value={pergunta}
-              sx={{
-                whiteSpace: "normal",
-                wordBreak: "break-word",
-              }}
-            >
-              {`Q${index + 1} - ${pergunta}`}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      {/* PERGUNTAS */}
+      <Autocomplete
+        multiple
+        options={perguntas}
+        value={filters.pergunta}
+        onChange={(_, value) => handleChange("pergunta", value)}
+        getOptionLabel={(option) => {
+          const index = perguntas.indexOf(option);
+          return `Q${index + 1} - ${option}`;
+        }}
+        renderInput={(params) => (
+          <TextField {...params} label="Perguntas" size="small" />
+        )}
+        ChipProps={{ size: "small" }}
+        renderTags={(value, getTagProps) =>
+          value.map((option, index) => {
+            const { key, ...tagProps } = getTagProps({ index });
+            const perguntaIndex = perguntas.indexOf(option);
+            return (
+              <Chip
+                key={key}
+                {...tagProps}
+                label={`Q${perguntaIndex + 1}`}
+                title={option}
+                size="small"
+              />
+            );
+          })
+        }
+        ListboxProps={{
+          style: { maxHeight: 300 },
+        }}
+        sx={{ minWidth: 320 }}
+      />
 
+      {/* BOTÃO LIMPAR */}
       <Button
         variant="outlined"
         onClick={() =>

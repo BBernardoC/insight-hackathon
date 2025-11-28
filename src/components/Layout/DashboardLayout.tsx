@@ -221,7 +221,13 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             >
               {importing ? "Importando..." : "Importar"}
             </Button>
-
+            <Button
+              color="inherit"
+              onClick={() => navigate("/")}
+              sx={{ ml: 1 }}
+            >
+              Home
+            </Button>
             {/* Novo: botão para página de login */}
             <Button
               color="inherit"
@@ -229,6 +235,13 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               sx={{ ml: 1 }}
             >
               Entrar
+            </Button>
+            <Button
+              color="inherit"
+              onClick={() => navigate("/avancado")}
+              sx={{ ml: 1 }}
+            >
+              Comparação Avançada
             </Button>
           </div>
         </Toolbar>
