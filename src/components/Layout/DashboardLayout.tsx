@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 import {
   Box,
   Drawer,
@@ -54,6 +55,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const { user, logout } = useAuth();
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
@@ -148,6 +150,11 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <Typography variant="h6" className="text-primary-foreground font-bold">
           Avaliação Institucional
         </Typography>
+        {user && (
+          <Typography variant="caption" className="text-primary-foreground/70">
+            {user.username} ({user.role})
+          </Typography>
+        )}
       </div>
       <Divider />
 
@@ -161,11 +168,13 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </ListItemButton>
         </ListItem>
 
-        <ListItem disablePadding className="mb-1">
-          <ListItemButton onClick={() => navigate("/login")}>
-            <ListItemText primary="Entrar" />
-          </ListItemButton>
-        </ListItem>
+        {!user && (
+          <ListItem disablePadding className="mb-1">
+            <ListItemButton onClick={() => navigate("/login")}>
+              <ListItemText primary="Entrar" />
+            </ListItemButton>
+          </ListItem>
+        )}
 
         <ListItem disablePadding className="mb-1">
           <ListItemButton onClick={() => navigate("/avancado")}>
@@ -173,11 +182,24 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </ListItemButton>
         </ListItem>
 
-        <ListItem disablePadding className="mb-1">
-          <ListItemButton onClick={() => navigate("/professor")}>
-            <ListItemText primary="Professor" />
-          </ListItemButton>
-        </ListItem>
+        {(user?.role === "professor" || user?.role === "admin") && (
+          <ListItem disablePadding className="mb-1">
+            <ListItemButton onClick={() => navigate("/professor")}>
+              <ListItemText primary="Professor" />
+            </ListItemButton>
+          </ListItem>
+        )}
+
+        {user && (
+          <ListItem disablePadding className="mb-1">
+            <ListItemButton onClick={() => {
+              logout();
+              navigate("/");
+            }}>
+              <ListItemText primary="Sair" />
+            </ListItemButton>
+          </ListItem>
+        )}
       </List>
 
       <Divider />
@@ -216,17 +238,19 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </IconButton>
           </div>
 
-          {/* AppBar: apenas botão Importar */}
+          {/* AppBar: apenas botão Importar - visível apenas para admin */}
           <div>
-            <Button
-              color="inherit"
-              startIcon={<CloudUpload />}
-              onClick={handleImportClick}
-              disabled={importing}
-              sx={{ ml: 1 }}
-            >
-              {importing ? "Importando..." : "Importar"}
-            </Button>
+            {user?.role === "admin" && (
+              <Button
+                color="inherit"
+                startIcon={<CloudUpload />}
+                onClick={handleImportClick}
+                disabled={importing}
+                sx={{ ml: 1 }}
+              >
+                {importing ? "Importando..." : "Importar"}
+              </Button>
+            )}
           </div>
         </Toolbar>
       </AppBar>

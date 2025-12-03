@@ -23,7 +23,7 @@ def get_db():
 def init_db():
     conn = get_db()
     conn.execute(
-        "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT, role TEXT DEFAULT 'aluno')"
+        "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT, role TEXT DEFAULT 'geral')"
     )
     conn.execute('''CREATE TABLE IF NOT EXISTS disciplina_presencial (
 ID_PESQUISA VARCHAR(10),
@@ -97,12 +97,12 @@ def register():
     data = request.get_json() or {}
     username = data.get("username", "").strip()
     password = data.get("password", "")
-    role = data.get("role", "aluno").strip().lower()
+    role = data.get("role", "geral").strip().lower()
     
     if not username or not password:
         return jsonify({"error": "username and password required"}), 400
     
-    if role not in ["admin", "professor", "aluno"]:
+    if role not in ["admin", "professor", "geral"]:
         return jsonify({"error": "invalid role"}), 400
     
     conn = get_db()

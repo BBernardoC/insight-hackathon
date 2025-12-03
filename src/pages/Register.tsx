@@ -5,7 +5,7 @@ export default function Register() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPwd, setConfirmPwd] = useState("");
-  const [role, setRole] = useState("aluno");
+  const [role, setRole] = useState("geral");
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,7 +53,7 @@ export default function Register() {
             value={role}
             onChange={(e) => setRole(e.target.value)}
           >
-            <option value="aluno">Aluno</option>
+            <option value="geral">Geral</option>
             <option value="professor">Professor</option>
             <option value="admin">Admin</option>
           </select>
