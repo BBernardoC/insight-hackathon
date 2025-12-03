@@ -25,6 +25,7 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Stack,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -139,33 +140,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     setMobileOpen(!mobileOpen);
   };
 
-  const menuItems = [
-    {
-      text: "Dashboard",
-      icon: <Dashboard />,
-      active: true,
-    },
-    {
-      text: "Avaliações",
-      icon: <Assessment onClick={() => navigate("/")} />,
-      active: false,
-    },
-    {
-      text: "Filtros",
-      icon: <FilterList onClick={() => navigate("/")} />,
-      active: false,
-    },
-    {
-      text: "Relatórios",
-      icon: <TableChart onClick={() => navigate("/")} />,
-      active: false,
-    },
-    {
-      text: "Configurações",
-      icon: <Settings onClick={() => navigate("/")} />,
-      active: false,
-    },
-  ];
+  // AppBar will show only the Import button (keeps existing functionality)
 
   const drawer = (
     <div className="h-full bg-card flex flex-col">
@@ -175,29 +150,42 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </Typography>
       </div>
       <Divider />
-      <List className="flex-1 p-3">
-        {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding className="mb-1">
-            <ListItemButton
-              className={`rounded-lg transition-all ${
-                item.active
-                  ? "bg-primary text-primary-foreground hover:bg-primary-hover"
-                  : "hover:bg-secondary text-foreground"
-              }`}
-              onClick={() => navigate("/")}
-            >
-              <ListItemIcon
-                className={
-                  item.active ? "text-primary-foreground" : "text-foreground"
-                }
-              >
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
+
+      {/* Aqui ficam os botões Importar / Home / Entrar / Avançado / Professor */}
+      <List className="p-3">
+        {/* Botão 'Importar' removido do menu esquerdo; permanece no AppBar superior */}
+
+        <ListItem disablePadding className="mb-1">
+          <ListItemButton onClick={() => navigate("/")}>
+            <ListItemText primary="Home" />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem disablePadding className="mb-1">
+          <ListItemButton onClick={() => navigate("/login")}>
+            <ListItemText primary="Entrar" />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem disablePadding className="mb-1">
+          <ListItemButton onClick={() => navigate("/avancado")}>
+            <ListItemText primary="Comparação Avançada" />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem disablePadding className="mb-1">
+          <ListItemButton onClick={() => navigate("/professor")}>
+            <ListItemText primary="Professor" />
+          </ListItemButton>
+        </ListItem>
       </List>
+
+      <Divider />
+
+      {/* Mantém espaço para outros itens se necessário */}
+      <div className="flex-1 p-3">
+        {/* você pode adicionar outras listas/links aqui */}
+      </div>
     </div>
   );
 
@@ -228,51 +216,16 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </IconButton>
           </div>
 
+          {/* AppBar: apenas botão Importar */}
           <div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf,application/pdf,.xls, .xlsx, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-              multiple
-              style={{ display: "none" }}
-              onChange={(e) => handleFilesSelected(e.target.files)}
-            />
             <Button
               color="inherit"
               startIcon={<CloudUpload />}
               onClick={handleImportClick}
               disabled={importing}
+              sx={{ ml: 1 }}
             >
               {importing ? "Importando..." : "Importar"}
-            </Button>
-            <Button
-              color="inherit"
-              onClick={() => navigate("/")}
-              sx={{ ml: 1 }}
-            >
-              Home
-            </Button>
-            <Button
-              color="inherit"
-              onClick={() => navigate("/login")}
-              sx={{ ml: 1 }}
-            >
-              Entrar
-            </Button>
-            <Button
-              color="inherit"
-              onClick={() => navigate("/avancado")}
-              sx={{ ml: 1 }}
-            >
-              Comparação Avançada
-            </Button>
-
-            <Button
-              color="inherit"
-              onClick={() => navigate("/professor")}
-              sx={{ ml: 1 }}
-            >
-              Professor
             </Button>
           </div>
         </Toolbar>
@@ -382,6 +335,16 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       >
         {children}
       </Box>
+
+      {/* input escondido de arquivos (permanece no layout) */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,application/pdf,.xls, .xlsx, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        multiple
+        style={{ display: "none" }}
+        onChange={(e) => handleFilesSelected(e.target.files)}
+      />
     </Box>
   );
 };
