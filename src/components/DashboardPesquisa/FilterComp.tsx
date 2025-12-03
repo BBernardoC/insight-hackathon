@@ -27,6 +27,7 @@ export interface DashboardFilters {
   disciplina: string[];
   pergunta: string[];
   lotacao: string[];
+  entryDate: string[]; // ✅ NOVO!
 }
 
 interface Props {
@@ -34,23 +35,34 @@ interface Props {
   filtersRight: DashboardFilters;
   onFiltersLeftChange: (filters: DashboardFilters) => void;
   onFiltersRightChange: (filters: DashboardFilters) => void;
-  onDadosLeftChange: (dados: DadoPesquisa[]) => void; // ✅ NOVO!
-  onDadosRightChange: (dados: DadoPesquisa[]) => void; // ✅ NOVO!
+  onDadosLeftChange: (dados: DadoPesquisa[]) => void;
+  onDadosRightChange: (dados: DadoPesquisa[]) => void;
 }
+
+// ================= FUNÇÕES AUXILIARES =================
+const formatarData = (dataStr: string, isDisciplina: boolean): string => {
+  if (!dataStr) return "";
+
+  const date = new Date(dataStr);
+  const mes = String(date.getMonth() + 1).padStart(2, "0");
+  const ano = date.getFullYear();
+
+  return isDisciplina ? `${mes}/${ano}` : String(ano);
+};
 
 // ================= COMPONENTE INDIVIDUAL =================
 interface FilterSideProps {
   title: string;
   filters: DashboardFilters;
   onFiltersChange: (filters: DashboardFilters) => void;
-  onDadosChange: (dados: DadoPesquisa[]) => void; // ✅ NOVO!
+  onDadosChange: (dados: DadoPesquisa[]) => void;
 }
 
 function FilterSide({
   title,
   filters,
   onFiltersChange,
-  onDadosChange, // ✅ NOVO!
+  onDadosChange,
 }: FilterSideProps) {
   const [dados, setDados] = useState<DadoPesquisa[]>([]);
   const [loading, setLoading] = useState(false);
@@ -59,7 +71,7 @@ function FilterSide({
   useEffect(() => {
     if (!filters.tipoPesquisa) {
       setDados([]);
-      onDadosChange([]); // ✅ NOTIFICA O PAI!
+      onDadosChange([]);
       return;
     }
 
@@ -69,12 +81,12 @@ function FilterSide({
       .then((module) => {
         const dadosCarregados = module.default as DadoPesquisa[];
         setDados(dadosCarregados);
-        onDadosChange(dadosCarregados); // ✅ NOTIFICA O PAI!
+        onDadosChange(dadosCarregados);
       })
       .catch((error) => {
         console.error(`Erro ao carregar ${filters.tipoPesquisa}.json:`, error);
         setDados([]);
-        onDadosChange([]); // ✅ NOTIFICA O PAI!
+        onDadosChange([]);
       })
       .finally(() => {
         setLoading(false);
@@ -94,6 +106,7 @@ function FilterSide({
       updated.disciplina = [];
       updated.pergunta = [];
       updated.lotacao = [];
+      updated.entryDate = [];
     }
 
     if (field === "setorCurso") {
@@ -113,6 +126,11 @@ function FilterSide({
 
     onFiltersChange(updated);
   };
+
+  // Verifica se é tipo disciplina (presencial ou EAD)
+  const isDisciplina =
+    filters.tipoPesquisa === "disciplina_presencial" ||
+    filters.tipoPesquisa === "disciplina_ead";
 
   // ✅ SETORES
   const setores = Array.from(new Set(dados.map((d) => d.SETOR_CURSO)));
@@ -176,6 +194,26 @@ function FilterSide({
     new Set(dados.map((d) => d.LOTACAO || "").filter((l) => l !== ""))
   );
 
+  // ✅ DATAS FORMATADAS CONFORME O TIPO
+  const entryDates = Array.from(
+    new Set(
+      dados
+        .map((d) => formatarData(d.ENTRY_DATE, isDisciplina))
+        .filter((date) => date !== "")
+    )
+  ).sort((a, b) => {
+    // Ordenação correta de datas
+    const [aMonth, aYear] = a.includes("/")
+      ? a.split("/").map(Number)
+      : [0, Number(a)];
+    const [bMonth, bYear] = b.includes("/")
+      ? b.split("/").map(Number)
+      : [0, Number(b)];
+
+    if (aYear !== bYear) return bYear - aYear; // Ano decrescente
+    return bMonth - aMonth; // Mês decrescente
+  });
+
   return (
     <Paper elevation={2} sx={{ p: 2, height: "100%" }}>
       <Typography variant="h6" gutterBottom color="primary">
@@ -202,6 +240,23 @@ function FilterSide({
             />
           )}
           disabled={loading}
+        />
+
+        {/* ENTRY DATE */}
+        <Autocomplete
+          multiple
+          options={entryDates}
+          value={filters.entryDate}
+          onChange={(_, value) => handleChange("entryDate", value)}
+          disabled={!filters.tipoPesquisa || loading || entryDates.length === 0}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label={isDisciplina ? "Período (MM/YYYY)" : "Ano"}
+              size="small"
+            />
+          )}
+          ChipProps={{ size: "small" }}
         />
 
         {/* FILTROS PARA NÃO-INSTITUCIONAL */}
@@ -323,6 +378,7 @@ function FilterSide({
               disciplina: [],
               pergunta: [],
               lotacao: [],
+              entryDate: [],
             })
           }
         >
@@ -339,8 +395,8 @@ export default function FilterComp({
   filtersRight,
   onFiltersLeftChange,
   onFiltersRightChange,
-  onDadosLeftChange, // ✅ NOVO!
-  onDadosRightChange, // ✅ NOVO!
+  onDadosLeftChange,
+  onDadosRightChange,
 }: Props) {
   return (
     <Box sx={{ width: "100%", p: 2 }}>
@@ -353,14 +409,14 @@ export default function FilterComp({
           title="Filtros - Lado Esquerdo"
           filters={filtersLeft}
           onFiltersChange={onFiltersLeftChange}
-          onDadosChange={onDadosLeftChange} // ✅ NOVO!
+          onDadosChange={onDadosLeftChange}
         />
 
         <FilterSide
           title="Filtros - Lado Direito"
           filters={filtersRight}
           onFiltersChange={onFiltersRightChange}
-          onDadosChange={onDadosRightChange} // ✅ NOVO!
+          onDadosChange={onDadosRightChange}
         />
       </Box>
     </Box>

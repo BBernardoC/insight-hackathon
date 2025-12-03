@@ -63,10 +63,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
               margin: "4px 0",
               color:
                 resposta === "Concordo" || resposta === "Sim"
-                  ? "#2E7D32"
+                  ? "#1E8F55"
                   : resposta === "Desconheço"
-                  ? "#616161"
-                  : "#e61212ff",
+                  ? "#5C6B73"
+                  : "#C64540",
             }}
           >
             {resposta}: {percentual.toFixed(2)}% ({quantidade} respostas)
@@ -79,11 +79,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 interface Props {
   filters: DashboardFilters;
-  dados: DadoPesquisa[]; // Recebe os dados como prop!
+  dados: DadoPesquisa[];
 }
 
 export default function Grafico({ filters, dados }: Props) {
-  // Se não houver dados carregados, mostra mensagem
   if (!dados || dados.length === 0) {
     return (
       <Paper className="p-6 border rounded-xl">
@@ -127,16 +126,13 @@ export default function Grafico({ filters, dados }: Props) {
 
   const dadosGraficoOriginal = transformarDadosPesquisa(dadosFiltrados);
 
-  // ===== LISTA COMPLETA DE PERGUNTAS (para manter índice correto) =====
   const todasPerguntas = Array.from(new Set(dados.map((d) => d.PERGUNTA)));
 
-  // ===== AGRUPAMENTO DAS RESPOSTAS =====
   const dadosGrafico = dadosGraficoOriginal.map((item: any) => {
     const positivo = (item.Concordo || 0) + (item.Sim || 0);
     const negativo = (item.Discordo || 0) + (item["Não"] || 0);
     const neutro = item.Desconheço || 0;
 
-    // Encontra o índice original da pergunta
     const indiceOriginal = todasPerguntas.indexOf(item.pergunta);
 
     return {
@@ -152,12 +148,12 @@ export default function Grafico({ filters, dados }: Props) {
     };
   });
 
-  const ORDEM_RESPOSTAS = ["Positivo", "Desconheço", "Negativo"];
+  const ORDEM_RESPOSTAS = ["Positivo", "Neutro", "Negativo"];
 
   const CORES_MAP: Record<string, string> = {
-    Positivo: "#18a41cff",
-    Desconheço: "#BDBDBD",
-    Negativo: "#f30c0cff",
+    Positivo: "#5AA650",
+    Neutro: "#E0A546",
+    Negativo: "#CC4A4B",
   };
 
   const respostasUnicas = ORDEM_RESPOSTAS.filter((resposta) =>
@@ -165,7 +161,10 @@ export default function Grafico({ filters, dados }: Props) {
   );
 
   return (
-    <Paper className="p-6 border rounded-xl">
+    <Paper
+      className="p-6 border rounded-xl"
+      sx={{ backgroundColor: "#ffffffff" }}
+    >
       <Typography variant="h6" className="font-bold mb-4">
         Distribuição percentual das respostas por pergunta (%)
       </Typography>
@@ -176,22 +175,24 @@ export default function Grafico({ filters, dados }: Props) {
         </Typography>
       ) : (
         <ResponsiveContainer width="100%" height={450}>
-          <BarChart data={dadosGrafico} layout="vertical">
+          <BarChart data={dadosGrafico}>
             <CartesianGrid strokeDasharray="3 3" />
 
+            {/* EIXO X = PERGUNTAS */}
             <XAxis
-              type="number"
-              domain={[0, 100]}
-              tickFormatter={(v) => `${v.toFixed(2)}%`}
-            />
-
-            <YAxis
               type="category"
               dataKey="pergunta"
-              tickFormatter={(v, index) => {
+              tickFormatter={(v) => {
                 const item = dadosGrafico.find((d) => d.pergunta === v);
-                return item ? `Q${item.indiceOriginal + 1}` : `Q${index + 1}`;
+                return item ? `Q${item.indiceOriginal + 1}` : v;
               }}
+            />
+
+            {/* EIXO Y = % */}
+            <YAxis
+              type="number"
+              domain={[0, 100]}
+              tickFormatter={(v) => `${v.toFixed(0)}%`}
             />
 
             <Tooltip content={<CustomTooltip />} />

@@ -12,19 +12,31 @@ const TIPOS_PESQUISA = [
 
 // ================= INTERFACE =================
 export interface DashboardFilters {
-  tipoPesquisa: string; // Novo campo!
+  tipoPesquisa: string;
   setorCurso: string[];
   curso: string[];
   disciplina: string[];
   pergunta: string[];
   lotacao: string[];
+  entryDate: string[]; // Novo campo!
 }
 
 interface Props {
   filters: DashboardFilters;
   onFiltersChange: (filters: DashboardFilters) => void;
-  onDadosChange: (dados: DadoPesquisa[]) => void; // Novo callback!
+  onDadosChange: (dados: DadoPesquisa[]) => void;
 }
+
+// ================= FUNÇÕES AUXILIARES =================
+const formatarData = (dataStr: string, isDisciplina: boolean): string => {
+  if (!dataStr) return "";
+
+  const date = new Date(dataStr);
+  const mes = String(date.getMonth() + 1).padStart(2, "0");
+  const ano = date.getFullYear();
+
+  return isDisciplina ? `${mes}/${ano}` : String(ano);
+};
 
 // ================= COMPONENTE =================
 export default function FiltersPanel({
@@ -41,7 +53,6 @@ export default function FiltersPanel({
 
     setLoading(true);
 
-    // Importa dinamicamente o JSON
     import(`../../../cache/${filters.tipoPesquisa}.json`)
       .then((module) => {
         const dadosCarregados = module.default as DadoPesquisa[];
@@ -71,6 +82,7 @@ export default function FiltersPanel({
       updated.disciplina = [];
       updated.pergunta = [];
       updated.lotacao = [];
+      updated.entryDate = [];
     }
 
     if (field === "setorCurso") {
@@ -90,11 +102,11 @@ export default function FiltersPanel({
 
     onFiltersChange(updated);
   };
-  const campoCursoOuDepto =
-    filters.tipoPesquisa === "institucional" ? "DEPARTAMENTO" : "CURSO";
 
-  const labelCursoOuDepto =
-    filters.tipoPesquisa === "institucional" ? "Departamento" : "Curso";
+  // Verifica se é tipo disciplina (presencial ou EAD)
+  const isDisciplina =
+    filters.tipoPesquisa === "disciplina_presencial" ||
+    filters.tipoPesquisa === "disciplina_ead";
 
   // ✅ OPÇÕES BASEADAS NOS DADOS CARREGADOS
   const setores = Array.from(new Set(dados.map((d) => d.SETOR_CURSO)));
@@ -151,9 +163,34 @@ export default function FiltersPanel({
     new Set(dados.map((d) => d.LOTACAO || "").filter((l) => l !== ""))
   );
 
+  // ✅ DATAS FORMATADAS CONFORME O TIPO
+  const entryDates = Array.from(
+    new Set(
+      dados
+        .map((d) => formatarData(d.ENTRY_DATE, isDisciplina))
+        .filter((date) => date !== "")
+    )
+  ).sort((a, b) => {
+    // Ordenação correta de datas
+    const [aMonth, aYear] = a.includes("/")
+      ? a.split("/").map(Number)
+      : [0, Number(a)];
+    const [bMonth, bYear] = b.includes("/")
+      ? b.split("/").map(Number)
+      : [0, Number(b)];
+
+    if (aYear !== bYear) return bYear - aYear; // Ano decrescente
+    return bMonth - aMonth; // Mês decrescente
+  });
+
   return (
-    <Box display="flex" gap={2} flexWrap="wrap">
-      {/* TIPO DE PESQUISA (NOVO!) */}
+    <Box
+      display="flex"
+      gap={2}
+      flexWrap="wrap"
+      sx={{ backgroundColor: "#ffffffff", p: 2, borderRadius: 2 }}
+    >
+      {/* TIPO DE PESQUISA */}
       <Autocomplete
         options={TIPOS_PESQUISA}
         value={
@@ -173,6 +210,24 @@ export default function FiltersPanel({
         )}
         sx={{ minWidth: 220 }}
         disabled={loading}
+      />
+
+      {/* ENTRY DATE */}
+      <Autocomplete
+        multiple
+        options={entryDates}
+        value={filters.entryDate}
+        onChange={(_, value) => handleChange("entryDate", value)}
+        disabled={!filters.tipoPesquisa || loading || entryDates.length === 0}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label={isDisciplina ? "Período (MM/YYYY)" : "Ano"}
+            size="small"
+          />
+        )}
+        ChipProps={{ size: "small" }}
+        sx={{ minWidth: 200 }}
       />
 
       {/* MOSTRA FILTROS NORMAIS PARA NÃO-INSTITUCIONAL */}
@@ -285,6 +340,7 @@ export default function FiltersPanel({
             disciplina: [],
             pergunta: [],
             lotacao: [],
+            entryDate: [],
           })
         }
       >

@@ -145,8 +145,15 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   // AppBar will show only the Import button (keeps existing functionality)
 
   const drawer = (
-    <div className="h-full bg-card flex flex-col">
-      <div className="p-6 bg-primary">
+    <div
+      className="h-full bg-card flex flex-col"
+      style={{
+        backgroundColor: "#EEEEEE",
+        border: "1px solid hsl(var(--border))",
+        borderColor: "black",
+      }}
+    >
+      <div className="p-6" style={{ backgroundColor: "#000000ff" }}>
         <Typography variant="h6" className="text-primary-foreground font-bold">
           Avaliação Institucional
         </Typography>
@@ -156,12 +163,9 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </Typography>
         )}
       </div>
-      <Divider />
 
       {/* Aqui ficam os botões Importar / Home / Entrar / Avançado / Professor */}
-      <List className="p-3">
-        {/* Botão 'Importar' removido do menu esquerdo; permanece no AppBar superior */}
-
+      <List sx={{ backgroundColor: "#4485aa" }} className="p-3">
         <ListItem disablePadding className="mb-1">
           <ListItemButton onClick={() => navigate("/")}>
             <ListItemText primary="Home" />
@@ -192,17 +196,17 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
         {user && (
           <ListItem disablePadding className="mb-1">
-            <ListItemButton onClick={() => {
-              logout();
-              navigate("/");
-            }}>
+            <ListItemButton
+              onClick={() => {
+                logout();
+                navigate("/");
+              }}
+            >
               <ListItemText primary="Sair" />
             </ListItemButton>
           </ListItem>
         )}
       </List>
-
-      <Divider />
 
       {/* Mantém espaço para outros itens se necessário */}
       <div className="flex-1 p-3">
@@ -212,16 +216,17 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   );
 
   return (
-    <Box className="flex h-screen bg-background">
+    <Box
+      className="flex h-screen bg-background"
+      sx={{ backgroundColor: "#EEEEEE " }}
+    >
       <AppBar
         position="fixed"
         elevation={0}
         sx={{
           width: { md: `calc(100% - ${drawerWidth}px)` },
           ml: { md: `${drawerWidth}px` },
-          borderBottom: 1,
-          borderColor: "hsl(var(--border))",
-          backgroundColor: "hsl(var(--card))",
+          backgroundColor: "#393E46",
           color: "hsl(var(--foreground))",
         }}
       >
@@ -246,7 +251,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 startIcon={<CloudUpload />}
                 onClick={handleImportClick}
                 disabled={importing}
-                sx={{ ml: 1 }}
+                sx={{ ml: 1, backgroundColor: "#4485aa" }}
               >
                 {importing ? "Importando..." : "Importar"}
               </Button>

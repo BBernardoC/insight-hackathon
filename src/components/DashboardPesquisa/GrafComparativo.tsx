@@ -90,7 +90,7 @@ function GraficoIndividual({ filters, title }: GraficoIndividualProps) {
   const [dados, setDados] = useState<DadoPesquisa[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // ==== Carrega o JSON correto baseado no tipo da pesquisa ====
+  // ==== Carrega o JSON baseado no tipo da pesquisa ====
   useEffect(() => {
     if (!filters.tipoPesquisa) {
       setDados([]);
@@ -139,10 +139,10 @@ function GraficoIndividual({ filters, title }: GraficoIndividualProps) {
 
   const dadosGraficoOriginal = transformarDadosPesquisa(dadosFiltrados);
 
-  // Lista completa de perguntas para manter o índice original
+  // Para manter índice original
   const todasPerguntas = Array.from(new Set(dados.map((d) => d.PERGUNTA)));
 
-  // ==== Ajuste final do dataset ====
+  // ==== Ajustando dataset para o gráfico ====
   const dadosGrafico = dadosGraficoOriginal.map((item: any) => {
     const positivo = (item.Concordo || 0) + (item.Sim || 0);
     const negativo = (item.Discordo || 0) + (item["Não"] || 0);
@@ -166,13 +166,13 @@ function GraficoIndividual({ filters, title }: GraficoIndividualProps) {
   const ORDEM_RESPOSTAS = ["Positivo", "Neutro", "Negativo"];
 
   const CORES_MAP: Record<string, string> = {
-    Positivo: "#18a41cff",
-    Neutro: "#BDBDBD",
-    Negativo: "#f30c0cff",
+    Positivo: "#5AA650",
+    Neutro: "#E0A546",
+    Negativo: "#CC4A4B",
   };
 
   const respostasUnicas = ORDEM_RESPOSTAS.filter((resposta) =>
-    dadosGrafico.some((item) => item[resposta] && item[resposta] > 0)
+    dadosGrafico.some((item) => item[resposta] > 0)
   );
 
   return (
@@ -191,22 +191,24 @@ function GraficoIndividual({ filters, title }: GraficoIndividualProps) {
         </Typography>
       ) : (
         <ResponsiveContainer width="100%" height={450}>
-          <BarChart data={dadosGrafico} layout="vertical">
+          <BarChart data={dadosGrafico}>
             <CartesianGrid strokeDasharray="3 3" />
 
+            {/* EIXO X = PERGUNTAS */}
             <XAxis
-              type="number"
-              domain={[0, 100]}
-              tickFormatter={(v) => `${v.toFixed(2)}%`}
-            />
-
-            <YAxis
               type="category"
               dataKey="pergunta"
-              tickFormatter={(v, index) => {
+              tickFormatter={(v) => {
                 const item = dadosGrafico.find((d) => d.pergunta === v);
-                return item ? `Q${item.indiceOriginal + 1}` : `Q${index + 1}`;
+                return item ? `Q${item.indiceOriginal + 1}` : v;
               }}
+            />
+
+            {/* EIXO Y = % */}
+            <YAxis
+              type="number"
+              domain={[0, 100]}
+              tickFormatter={(v) => `${v.toFixed(0)}%`}
             />
 
             <Tooltip content={<CustomTooltip />} />

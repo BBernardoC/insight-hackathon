@@ -7,4 +7,5 @@ export interface DadoPesquisa {
   NOME_DISCIPLINA: string;
   LOTACAO: string;
   CODPROF: string;
+  ENTRY_DATE: string;
 }

@@ -22,7 +22,8 @@ const MetricCard = ({ title, value, icon, color }: MetricCardProps) => {
   return (
     <Paper
       elevation={0}
-      className="p-6 border border-border rounded-xl hover:shadow-lg transition-all"
+      className="p-6  border-border rounded-xl hover:shadow-lg transition-all"
+      sx={{ backgroundColor: "#ffffffff" }}
     >
       <Box className="flex items-start justify-between">
         <Box>

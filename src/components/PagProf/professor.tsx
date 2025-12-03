@@ -44,6 +44,7 @@ export interface ProfessorFilters {
   curso: string[];
   disciplina: string[];
   pergunta: string[];
+  entryDate: string[]; // ✅ NOVO!
 }
 
 interface MetricData {
@@ -53,6 +54,17 @@ interface MetricData {
   totalDisciplinas: number;
   totalCursos: number;
 }
+
+// ================= FUNÇÕES AUXILIARES =================
+const formatarData = (dataStr: string, isDisciplina: boolean): string => {
+  if (!dataStr) return "";
+
+  const date = new Date(dataStr);
+  const mes = String(date.getMonth() + 1).padStart(2, "0");
+  const ano = date.getFullYear();
+
+  return isDisciplina ? `${mes}/${ano}` : String(ano);
+};
 
 // ================= FILTROS =================
 interface FiltersPanelProps {
@@ -107,6 +119,7 @@ function FiltersPanel({
       updated.curso = [];
       updated.disciplina = [];
       updated.pergunta = [];
+      updated.entryDate = [];
     }
 
     if (field === "professor") {
@@ -126,6 +139,11 @@ function FiltersPanel({
 
     onFiltersChange(updated);
   };
+
+  // Verifica se é tipo disciplina (sempre true neste dashboard)
+  const isDisciplina =
+    filters.tipoPesquisa === "disciplina_presencial" ||
+    filters.tipoPesquisa === "disciplina_ead";
 
   // ✅ PROFESSORES
   const professores = Array.from(
@@ -182,6 +200,26 @@ function FiltersPanel({
     )
   );
 
+  // ✅ DATAS FORMATADAS CONFORME O TIPO
+  const entryDates = Array.from(
+    new Set(
+      dados
+        .map((d) => formatarData(d.ENTRY_DATE, isDisciplina))
+        .filter((date) => date !== "")
+    )
+  ).sort((a, b) => {
+    // Ordenação correta de datas
+    const [aMonth, aYear] = a.includes("/")
+      ? a.split("/").map(Number)
+      : [0, Number(a)];
+    const [bMonth, bYear] = b.includes("/")
+      ? b.split("/").map(Number)
+      : [0, Number(b)];
+
+    if (aYear !== bYear) return bYear - aYear; // Ano decrescente
+    return bMonth - aMonth; // Mês decrescente
+  });
+
   return (
     <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
       <Typography variant="h6" gutterBottom color="primary" mb={3}>
@@ -209,6 +247,20 @@ function FiltersPanel({
           )}
           disabled={loading}
           sx={{ minWidth: 220 }}
+        />
+
+        {/* ENTRY DATE */}
+        <Autocomplete
+          multiple
+          options={entryDates}
+          value={filters.entryDate}
+          onChange={(_, value) => handleChange("entryDate", value)}
+          disabled={!filters.tipoPesquisa || loading || entryDates.length === 0}
+          renderInput={(params) => (
+            <TextField {...params} label="Período (MM/YYYY)" size="small" />
+          )}
+          ChipProps={{ size: "small" }}
+          sx={{ minWidth: 200 }}
         />
 
         {/* PROFESSOR */}
@@ -300,6 +352,7 @@ function FiltersPanel({
               curso: [],
               disciplina: [],
               pergunta: [],
+              entryDate: [],
             })
           }
           sx={{ height: 40 }}
@@ -331,7 +384,21 @@ function calcularMetricas(
     const perguntaMatch =
       filters.pergunta.length === 0 || filters.pergunta.includes(item.PERGUNTA);
 
-    return professorMatch && cursoMatch && disciplinaMatch && perguntaMatch;
+    const isDisciplina =
+      filters.tipoPesquisa === "disciplina_presencial" ||
+      filters.tipoPesquisa === "disciplina_ead";
+
+    const entryDateMatch =
+      filters.entryDate.length === 0 ||
+      filters.entryDate.includes(formatarData(item.ENTRY_DATE, isDisciplina));
+
+    return (
+      professorMatch &&
+      cursoMatch &&
+      disciplinaMatch &&
+      perguntaMatch &&
+      entryDateMatch
+    );
   });
 
   const totalRespostas = dadosFiltrados.length;
@@ -506,7 +573,21 @@ function GraficoProfessor({ filters, dados }: GraficoProps) {
     const perguntaMatch =
       filters.pergunta.length === 0 || filters.pergunta.includes(item.PERGUNTA);
 
-    return professorMatch && cursoMatch && disciplinaMatch && perguntaMatch;
+    const isDisciplina =
+      filters.tipoPesquisa === "disciplina_presencial" ||
+      filters.tipoPesquisa === "disciplina_ead";
+
+    const entryDateMatch =
+      filters.entryDate.length === 0 ||
+      filters.entryDate.includes(formatarData(item.ENTRY_DATE, isDisciplina));
+
+    return (
+      professorMatch &&
+      cursoMatch &&
+      disciplinaMatch &&
+      perguntaMatch &&
+      entryDateMatch
+    );
   });
 
   const dadosGraficoOriginal = transformarDadosPesquisa(dadosFiltrados);
@@ -536,9 +617,9 @@ function GraficoProfessor({ filters, dados }: GraficoProps) {
   const ORDEM_RESPOSTAS = ["Positivo", "Desconheço", "Negativo"];
 
   const CORES_MAP: Record<string, string> = {
-    Positivo: "#18a41cff",
-    Desconheço: "#BDBDBD",
-    Negativo: "#f30c0cff",
+    Positivo: "#5AA650",
+    Desconheço: "#E0A546",
+    Negativo: "#CC4A4B",
   };
 
   const respostasUnicas = ORDEM_RESPOSTAS.filter((resposta) =>
@@ -562,22 +643,24 @@ function GraficoProfessor({ filters, dados }: GraficoProps) {
         </Typography>
       ) : (
         <ResponsiveContainer width="100%" height={450}>
-          <BarChart data={dadosGrafico} layout="vertical">
+          <BarChart data={dadosGrafico}>
             <CartesianGrid strokeDasharray="3 3" />
 
+            {/* X agora é categoria = pergunta */}
             <XAxis
-              type="number"
-              domain={[0, 100]}
-              tickFormatter={(v) => `${v.toFixed(2)}%`}
-            />
-
-            <YAxis
               type="category"
               dataKey="pergunta"
-              tickFormatter={(v, index) => {
+              tickFormatter={(v) => {
                 const item = dadosGrafico.find((d) => d.pergunta === v);
-                return item ? `Q${item.indiceOriginal + 1}` : `Q${index + 1}`;
+                return item ? `Q${item.indiceOriginal + 1}` : v;
               }}
+            />
+
+            {/* Y agora é numérico = percentual */}
+            <YAxis
+              type="number"
+              domain={[0, 100]}
+              tickFormatter={(v) => `${v.toFixed(0)}%`}
             />
 
             <Tooltip content={<CustomTooltip />} />
@@ -598,7 +681,6 @@ function GraficoProfessor({ filters, dados }: GraficoProps) {
     </Paper>
   );
 }
-
 // ================= COMPONENTE PRINCIPAL =================
 export default function ProfessorDashboard() {
   const [filters, setFilters] = useState<ProfessorFilters>({
@@ -607,6 +689,7 @@ export default function ProfessorDashboard() {
     curso: [],
     disciplina: [],
     pergunta: [],
+    entryDate: [],
   });
 
   const [dados, setDados] = useState<DadoPesquisa[]>([]);
