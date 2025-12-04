@@ -1,73 +1,80 @@
-# Welcome to your Lovable project
+# 📊 Insight Dashboard
 
-## Project info
+Um dashboard interativo para análise e visualização de dados de pesquisas acadêmicas, com suporte a múltiplas categorias de dados (disciplinas presenciais, EAD, cursos e institucional).
 
-**URL**: https://lovable.dev/projects/5a40d690-25c7-44c1-b77f-cfc575368ad9
+## Site disponivel em:
 
-## How can I edit this code?
+https://insight-hackathon-ufpr.vercel.app/
 
-There are several ways of editing your application.
+## 🚀 Como Começar
 
-**Use Lovable**
+### Instalação
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/5a40d690-25c7-44c1-b77f-cfc575368ad9) and start prompting.
+#### 1. Clone o repositório
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```bash
+git clone https://github.com/BBernardoC/insight-dashboard.git
+cd insight-dashboard
 ```
 
-**Edit a file directly in GitHub**
+#### 2. Instale as dependências do frontend
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+# Usando npm
+npm install
 
-**Use GitHub Codespaces**
+# Ou usando bun
+bun install
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+#### 3. Configure o backend
 
-## What technologies are used for this project?
+```bash
+# Entre na pasta do servidor
+cd server
 
-This project is built with:
+# Crie um ambiente virtual
+python -m venv venv
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+# Ative o ambiente virtual
+# No Windows:
+venv\Scripts\activate
+# No macOS/Linux:
+source venv/bin/activate
 
-## How can I deploy this project?
+# Instale as dependências
+pip install -r requirements.txt
+```
 
-Simply open [Lovable](https://lovable.dev/projects/5a40d690-25c7-44c1-b77f-cfc575368ad9) and click on Share -> Publish.
+### Desenvolvimento
 
-## Can I connect a custom domain to my Lovable project?
+#### Terminal 1: Frontend (Vite)
 
-Yes, you can!
+```bash
+npm run dev
+# ou
+bun run dev
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+#### Terminal 2: Backend (Flask)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+```bash
+cd server
+
+# Ative o ambiente virtual
+# Windows: venv\Scripts\activate
+# macOS/Linux: source venv/bin/activate
+
+# Execute a API
+python api.py
+```
+
+## 🔐 Autenticação
+
+O projeto inclui um sistema de autenticação com:
+
+- _No link do site esta setado como default admin (servidor de backend não esta online)_
+- Página de Login
+- Página de Registro
+- Contexto de Autenticação (AuthContext)
+- Proteção de rotas
