@@ -33,14 +33,6 @@ bun install
 # Entre na pasta do servidor
 cd server
 
-# Crie um ambiente virtual
-python -m venv venv
-
-# Ative o ambiente virtual
-# No Windows:
-venv\Scripts\activate
-# No macOS/Linux:
-source venv/bin/activate
 
 # Instale as dependências
 pip install -r requirements.txt
