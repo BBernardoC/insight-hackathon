@@ -253,19 +253,20 @@ export default function FiltersPanel({
             sx={{ minWidth: 220 }}
           />
 
-          {/* DISCIPLINA */}
-          <Autocomplete
-            multiple
-            options={disciplinas}
-            value={filters.disciplina}
-            onChange={(_, value) => handleChange("disciplina", value)}
-            disabled={disciplinas.length === 0}
-            renderInput={(params) => (
-              <TextField {...params} label="Disciplina" size="small" />
-            )}
-            ChipProps={{ size: "small" }}
-            sx={{ minWidth: 220 }}
-          />
+          {filters.tipoPesquisa !== "Curso" && (
+            <Autocomplete
+              multiple
+              options={disciplinas}
+              value={filters.disciplina}
+              onChange={(_, value) => handleChange("disciplina", value)}
+              disabled={disciplinas.length === 0}
+              renderInput={(params) => (
+                <TextField {...params} label="Disciplina" size="small" />
+              )}
+              ChipProps={{ size: "small" }}
+              sx={{ minWidth: 220 }}
+            />
+          )}
         </>
       )}
 
