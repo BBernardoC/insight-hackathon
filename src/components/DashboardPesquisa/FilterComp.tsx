@@ -69,29 +69,17 @@ function FilterSide({
 
   // Carrega o JSON quando o tipo muda
   useEffect(() => {
-    if (!filters.tipoPesquisa) {
-      setDados([]);
-      onDadosChange([]);
-      return;
+    async function loadData() {
+      if (!filters.tipoPesquisa) return;
+      const resp = await fetch(`/cache/${filters.tipoPesquisa}.json`);
+      const json = await resp.json();
+
+      setDados(json); // <-- AQUI!
+      onDadosChange(json);
     }
 
-    setLoading(true);
-
-    import(`../../../cache/${filters.tipoPesquisa}.json`)
-      .then((module) => {
-        const dadosCarregados = module.default as DadoPesquisa[];
-        setDados(dadosCarregados);
-        onDadosChange(dadosCarregados);
-      })
-      .catch((error) => {
-        console.error(`Erro ao carregar ${filters.tipoPesquisa}.json:`, error);
-        setDados([]);
-        onDadosChange([]);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [filters.tipoPesquisa, onDadosChange]);
+    loadData();
+  }, [filters.tipoPesquisa]);
 
   const handleChange = (
     field: keyof DashboardFilters,

@@ -92,20 +92,15 @@ function GraficoIndividual({ filters, title }: GraficoIndividualProps) {
 
   // ==== Carrega o JSON baseado no tipo da pesquisa ====
   useEffect(() => {
-    if (!filters.tipoPesquisa) {
-      setDados([]);
-      return;
+    async function loadData() {
+      if (!filters.tipoPesquisa) return;
+      const resp = await fetch(`/cache/${filters.tipoPesquisa}.json`);
+      const json = await resp.json();
+
+      setDados(json); // <-- AQUI!
     }
 
-    setLoading(true);
-
-    import(`../../../cache/${filters.tipoPesquisa}.json`)
-      .then((mod) => setDados(mod.default))
-      .catch((err) => {
-        console.error("Erro ao carregar JSON:", err);
-        setDados([]);
-      })
-      .finally(() => setLoading(false));
+    loadData();
   }, [filters.tipoPesquisa]);
 
   // ==== FILTRAGEM ====
